@@ -6,10 +6,15 @@ class Player:
         self.position = position
         self.speed = speed
         self.can_jump = False
-        self.direction = "idle"  # "right", "left", "idle"
-        self.frame_index = 0
+        self.direction = "idle"    # "idle", "right", "left"
+        # Her animasyon için ayrı frame index
+        self.idle_idx = 0
+        self.right_idx = 0
+        self.left_idx = 0
+        # Tüm animasyonlar için ortak frame counter / speed
         self.frame_counter = 0
         self.frame_speed = 8
+        self.is_jumping = False
 
 MAX_FALLING_ROCKS = 50
 
@@ -20,14 +25,14 @@ def main():
     rl.init_window(screen_width, screen_height, "Zıplama Oyunu - Astronot ve Düşen Taşlar")
     rl.set_target_fps(60)
 
-    # Sprite animasyonları
-    idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 9)]
-    walk_right_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
+    # Animasyon sprite'ları
+    idle_frames      = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 9)]
+    walk_right_frames= [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
     walk_left_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(25, 31)]
 
     camera = rl.Camera2D()
-    camera.offset = (screen_width / 2, screen_height / 2)
-    camera.zoom = 1.0
+    camera.offset = (screen_width/2, screen_height/2)
+    camera.zoom   = 1.0
 
     player = Player(rl.Vector2(100, 800), 3.0)
     gravity = 0.5
@@ -44,15 +49,18 @@ def main():
 
     goal = rl.Vector2(120, 300)
     game_finished = False
-    player_hit = False
+    player_hit    = False
 
     falling_rocks = []
     rock_spawn_timer = 0
 
     while not rl.window_should_close():
+        # 1) INPUT + PHYSICS + LOGIC
         if not game_finished and not player_hit:
+            # yönü başta idle yap
             player.direction = "idle"
-            # Input
+
+            # yatay hareket
             if rl.is_key_down(rl.KEY_RIGHT):
                 player.position.x += player.speed
                 player.direction = "right"
@@ -60,94 +68,99 @@ def main():
                 player.position.x -= player.speed
                 player.direction = "left"
 
+            # zıplama
             if rl.is_key_pressed(rl.KEY_SPACE) and player.can_jump:
                 velocity_y = -10
                 player.can_jump = False
+                player.is_jumping = True
 
+            # yerçekimi
             velocity_y += gravity
             player.position.y += velocity_y
 
-            # Platform collision
+            # platform çarpışması
             player.can_jump = False
             for plat in platforms:
-                player_rect = rl.Rectangle(player.position.x, player.position.y, 40, 50)
-                if rl.check_collision_recs(player_rect, plat):
-                    if velocity_y >= 0:
-                        player.position.y = plat.y - 50
-                        velocity_y = 0
-                        player.can_jump = True
+                pr = rl.Rectangle(player.position.x, player.position.y, idle_frames[0].width, idle_frames[0].height)
+                if rl.check_collision_recs(pr, plat) and velocity_y >= 0:
+                    player.position.y = plat.y - idle_frames[0].height
+                    velocity_y = 0
+                    player.can_jump = True
+                    player.is_jumping = False
 
-            # Check goal
-            if player.position.y <= goal.y:
-                game_finished = True
-            if player.position.y > goal.y + 600:
-                player_hit = True
+            # hedef kontrolü
+            if player.position.y <= goal.y:         game_finished = True
+            if player.position.y > goal.y + 600:    player_hit    = True
 
-            # Spawn falling rocks
+            # taş spawn
             rock_spawn_timer += 1
-            if rock_spawn_timer > 180:
-                if len(falling_rocks) < MAX_FALLING_ROCKS:
-                    rock_x = player.position.x + random.randint(-200, 200)
-                    rock_y = player.position.y - 300
-                    rock = rl.Rectangle(rock_x, rock_y, 20, 20)
-                    falling_rocks.append((rock, random.randint(2, 5)))
+            if rock_spawn_timer > 180 and len(falling_rocks) < MAX_FALLING_ROCKS:
+                rx = player.position.x + random.randint(-200,200)
+                ry = player.position.y - 300
+                falling_rocks.append((rl.Rectangle(rx, ry, 20, 20), random.randint(2,5)))
                 rock_spawn_timer = 0
 
-            # Update rocks
+            # taş güncelle
             for rock, speed in falling_rocks[:]:
                 rock.y += speed
-                player_rect = rl.Rectangle(player.position.x, player.position.y, 40, 50)
-                if rl.check_collision_recs(player_rect, rock):
+                pr = rl.Rectangle(player.position.x, player.position.y, idle_frames[0].width, idle_frames[0].height)
+                if rl.check_collision_recs(pr, rock):
                     player_hit = True
                 if rock.y > player.position.y + screen_height:
                     falling_rocks.remove((rock, speed))
 
-            # Update animation frame
+            # animasyon güncelle
             player.frame_counter += 1
             if player.frame_counter >= (60 // player.frame_speed):
                 player.frame_counter = 0
-                player.frame_index += 1
                 if player.direction == "right":
-                    player.frame_index %= len(walk_right_frames)
+                    player.right_idx = (player.right_idx + 1) % len(walk_right_frames)
                 elif player.direction == "left":
-                    player.frame_index %= len(walk_left_frames)
+                    player.left_idx = (player.left_idx + 1) % len(walk_left_frames)
                 else:
-                    player.frame_index %= len(idle_frames)
+                    player.idle_idx = (player.idle_idx + 1) % len(idle_frames)
 
+        # 2) Kamera
         camera.target = player.position
 
-        # Drawing
+        # 3) Çizim
         rl.begin_drawing()
         rl.clear_background(rl.RAYWHITE)
         rl.begin_mode2d(camera)
 
-        # Karakteri çiz
-        if player.direction == "right":
-            frame = walk_right_frames[player.frame_index]
+        # karakteri çiz
+        if   player.direction == "right":
+            tex = walk_right_frames[player.right_idx]
         elif player.direction == "left":
-            frame = walk_left_frames[player.frame_index]
+            tex = walk_left_frames[player.left_idx]
         else:
-            frame = idle_frames[player.frame_index]
-        rl.draw_texture(frame, int(player.position.x), int(player.position.y), rl.WHITE)
+            tex = idle_frames[player.idle_idx]
 
+        rl.draw_texture(tex, int(player.position.x), int(player.position.y), rl.WHITE)
+
+        # platformlar
         for plat in platforms:
             rl.draw_rectangle_rec(plat, rl.DARKGRAY)
 
+        # hedef
         rl.draw_circle_v(goal, 10, rl.RED)
-        rl.draw_text("Hedef Nokta", int(goal.x) - 30, int(goal.y) - 30, 10, rl.RED)
+        rl.draw_text("Hedef Nokta", int(goal.x)-30, int(goal.y)-30, 10, rl.RED)
 
+        # düşen taşlar
         for rock, _ in falling_rocks:
             rl.draw_rectangle_rec(rock, rl.MAROON)
 
         rl.end_mode2d()
 
+        # oyun sonu mesajları
         if player_hit:
-            rl.draw_text("TAŞA ÇARPTIN veya DÜŞTÜN! Oyun Bitti.", screen_width // 2 - 150, screen_height // 2, 20, rl.RED)
+            rl.draw_text("TAŞA ÇARPTIN veya DÜŞTÜN! Oyun Bitti.", screen_width//2-150, screen_height//2, 20, rl.RED)
         elif game_finished:
-            rl.draw_text("TEBRİKLER! Yukarı ulaştın!", screen_width // 2 - 150, screen_height // 2, 20, rl.DARKGREEN)
+            rl.draw_text("TEBRİKLER! Yukarı ulaştın!", screen_width//2-150, screen_height//2, 20, rl.DARKGREEN)
 
         rl.end_drawing()
 
+    # temizleme
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.close_window()
