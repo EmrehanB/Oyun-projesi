@@ -17,7 +17,7 @@ class FallingRock:
 MAX_FALLING_ROCKS = 70
 FRAME_HOLD = 6
 
-PLATFORM_COUNT = 100
+PLATFORM_COUNT = 50
 PLATFORM_WIDTH_RANGE = (60, 90)
 PLATFORM_HEIGHT_GAP = (100, 150)
 HORIZONTAL_VARIANCE = 120  # Azaltıldı: çapraz atlamayı kolaylaştırmak için
