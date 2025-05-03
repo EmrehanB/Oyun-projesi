@@ -20,10 +20,9 @@ FRAME_HOLD = 6
 PLATFORM_COUNT = 100
 PLATFORM_WIDTH_RANGE = (60, 90)
 PLATFORM_HEIGHT_GAP = (100, 150)
-HORIZONTAL_VARIANCE = 120  # Azaltıldı: çapraz atlamayı kolaylaştırmak için
-COLLISION_TOLERANCE_X = 10  # Yatay tolerans
-COLLISION_TOLERANCE_Y = 10  # Dikey tolerans
-
+HORIZONTAL_VARIANCE = 120
+COLLISION_TOLERANCE_X = 10
+COLLISION_TOLERANCE_Y = 10
 
 def generate_platforms():
     platforms = []
@@ -36,23 +35,26 @@ def generate_platforms():
         y -= random.randint(*PLATFORM_HEIGHT_GAP)
     return platforms
 
-
 def main():
     screen_width = 800
     screen_height = 450
 
-    rl.init_window(screen_width, screen_height, "Zor Zıplama Oyunu - Astronot ve Düşen Taşlar")
+    rl.init_window(screen_width, screen_height, "Zor Zıplama Oyunu - Astronot ve Meteorlar")
     rl.set_target_fps(60)
 
     # Sprite yükleme
-    idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 9)]
+    idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 8)]
     walk_right_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
     walk_left_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(25, 31)]
+
+    # Meteor görseli
+    meteor_texture = rl.load_texture("assets/Meteor1.png")
+    meteor_width = meteor_texture.width - 45
+    meteor_height = meteor_texture.height - 40
 
     sprite_w = idle_frames[0].width
     sprite_h = idle_frames[0].height
 
-    # Platformları oluştur
     platforms = generate_platforms()
     first_plat = platforms[0]
     player = Player(
@@ -62,8 +64,6 @@ def main():
 
     gravity = 0.5
     velocity_y = 0
-
-    # Hedef noktası
     goal = rl.Vector2(platforms[-1].x + 30, platforms[-1].y)
 
     camera = rl.Camera2D()
@@ -79,6 +79,7 @@ def main():
     while not rl.window_should_close():
         if not game_finished and not player_hit:
             moving = False
+
             # Yatay hareket
             if rl.is_key_down(rl.KEY_RIGHT):
                 player.position.x += player.speed
@@ -98,7 +99,7 @@ def main():
             velocity_y += gravity
             player.position.y += velocity_y
 
-            # Platform çarpışması (kenar toleransı eklendi)
+            # Platform çarpışması
             player.can_jump = False
             player_rect = rl.Rectangle(player.position.x, player.position.y, sprite_w, sprite_h)
             for plat in platforms:
@@ -113,19 +114,20 @@ def main():
                     player.can_jump = True
                     break
 
-            # Hedefe ulaşma ve düşme kontrolü
+            # Hedef ve düşme kontrolü
             if player.position.y <= goal.y:
                 game_finished = True
             if player.position.y > platforms[0].y + 200:
                 player_hit = True
 
-            # Düşen taşlar
+            # Meteor üretme
             rock_spawn_timer += 1
             if rock_spawn_timer > 60:
                 if len(falling_rocks) < MAX_FALLING_ROCKS:
                     rx = player.position.x + random.randint(-HORIZONTAL_VARIANCE, HORIZONTAL_VARIANCE)
                     ry = player.position.y - 300
-                    falling_rocks.append(FallingRock(rl.Rectangle(rx, ry, 20, 20), random.randint(3, 6)))
+                    rock_rect = rl.Rectangle(rx, ry, meteor_width, meteor_height)
+                    falling_rocks.append(FallingRock(rock_rect, random.randint(3, 6)))
                 rock_spawn_timer = 0
 
             for rock in falling_rocks[:]:
@@ -157,9 +159,11 @@ def main():
         rl.draw_circle_v(goal, 10, rl.RED)
         rl.draw_text("HEDEF", int(goal.x) - 20, int(goal.y) - 30, 10, rl.RED)
 
+        # Meteorları çiz
         for rock in falling_rocks:
-            rl.draw_rectangle_rec(rock.rect, rl.MAROON)
+            rl.draw_texture(meteor_texture, int(rock.rect.x), int(rock.rect.y), rl.WHITE)
 
+        # Oyuncu sprite çizimi
         if not player.can_jump:
             frame = idle_frames[player.frame_index % len(idle_frames)]
         else:
@@ -175,14 +179,16 @@ def main():
         rl.end_mode2d()
 
         if player_hit:
-            rl.draw_text("DÜŞTÜN veya TAŞA ÇARPTIN! Oyun Bitti.", screen_width//2 - 200, screen_height//2, 20, rl.RED)
+            rl.draw_text("DÜŞTÜN veya METEORA ÇARPTIN! Oyun Bitti.", screen_width//2 - 200, screen_height//2, 20, rl.RED)
         elif game_finished:
             rl.draw_text("TEBRİKLER! Yukarı Ulaştın!", screen_width//2 - 150, screen_height//2, 20, rl.DARKGREEN)
 
         rl.end_drawing()
 
+    # Belleği temizle
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
+    rl.unload_texture(meteor_texture)
     rl.close_window()
 
 if __name__ == "__main__":
