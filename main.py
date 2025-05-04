@@ -17,7 +17,7 @@ class FallingRock:
 MAX_FALLING_ROCKS = 70
 FRAME_HOLD = 6
 
-PLATFORM_COUNT = 100
+PLATFORM_COUNT = 10
 PLATFORM_WIDTH_RANGE = (60, 90)
 PLATFORM_HEIGHT_GAP = (100, 150)
 HORIZONTAL_VARIANCE = 120
@@ -34,6 +34,7 @@ def generate_platforms():
         platforms.append(rl.Rectangle(x, y, width, 10))
         y -= random.randint(*PLATFORM_HEIGHT_GAP)
     return platforms
+
 def main():
     screen_width = 800
     screen_height = 450
@@ -41,12 +42,14 @@ def main():
     rl.init_window(screen_width, screen_height, "Zor Zıplama Oyunu - Astronot ve Meteorlar")
     rl.set_target_fps(60)
 
-    scale = 1.0
+    scale = 1.25
 
     idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 8)]
     walk_right_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
     walk_left_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(25, 31)]
     meteor_texture = rl.load_texture("assets/Meteor1.png")
+    ship_texture = rl.load_texture("assets/Ship2.png")
+
     meteor_width = meteor_texture.width - 45
     meteor_height = meteor_texture.height - 40
     sprite_w = idle_frames[0].width * scale
@@ -83,11 +86,11 @@ def main():
         rl.clear_background(rl.SKYBLUE)
 
         if menu_active:
-            rl.draw_text("🚀 ZOR ZIPLAMA OYUNU 🚀", screen_width//2 - 200, screen_height//2 - 100, 30, rl.DARKBLUE)
-            rl.draw_text("Başlamak için [SPACE] tuşuna bas", screen_width//2 - 180, screen_height//2 - 30, 20, rl.BLACK)
-            rl.draw_text("→ Sağ / ← Sol ile hareket", screen_width//2 - 180, screen_height//2 + 30, 18, rl.DARKGRAY)
-            rl.draw_text("[SPACE] ile zıpla - Meteorlardan kaç!", screen_width//2 - 180, screen_height//2 + 55, 18, rl.DARKGRAY)
-            rl.draw_text("[ESC] ile çıkış", screen_width//2 - 180, screen_height//2 + 85, 18, rl.MAROON)
+            rl.draw_text("🚀 Meteor Escape 🚀", screen_width//2 - 200, screen_height//2 - 100, 30, rl.DARKBLUE)
+            rl.draw_text("Controls:", screen_width//2 - 180, screen_height//2 + 20, 18, rl.DARKGRAY)
+            rl.draw_text("Use LEFT/RIGHT arrows to move", screen_width//2 - 180, screen_height//2 + 45, 16, rl.DARKGRAY)
+            rl.draw_text("Jump with [SPACE] – Avoid the meteors!", screen_width//2 - 180, screen_height//2 + 65, 16, rl.DARKGRAY)
+            rl.draw_text("Press [ESC] to quit", screen_width//2 - 180, screen_height//2 + 95, 16, rl.MAROON)
 
             if rl.is_key_pressed(rl.KEY_SPACE):
                 game_state = reset_game()
@@ -163,8 +166,8 @@ def main():
             for plat in game_state["platforms"]:
                 rl.draw_rectangle_rec(plat, rl.DARKGRAY)
 
-            rl.draw_circle_v(game_state["goal"], 10, rl.RED)
-            rl.draw_text("HEDEF", int(game_state["goal"].x) - 20, int(game_state["goal"].y) - 30, 10, rl.RED)
+            goal = game_state["goal"]
+            rl.draw_texture(ship_texture, int(goal.x - ship_texture.width / 2), int(goal.y - ship_texture.height / 2), rl.WHITE)
 
             for rock in game_state["falling_rocks"]:
                 rl.draw_texture(meteor_texture, int(rock.rect.x), int(rock.rect.y), rl.WHITE)
@@ -191,23 +194,23 @@ def main():
             rl.end_mode2d()
 
             if game_state["player_hit"]:
-                rl.draw_text("💥 DÜŞTÜN veya METEORA ÇARPTIN!", screen_width//2 - 210, screen_height//2, 20, rl.RED)
-                rl.draw_text("Yeniden başlamak için [R]", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
+                rl.draw_text("YOU FELL OR GOT HIT BY A METEOR! GAME OVER.", screen_width//2 - 210, screen_height//2, 20, rl.RED)
+                rl.draw_text("[R] to Restart", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
             elif game_state["game_finished"]:
-                rl.draw_text("🎉 TEBRİKLER! Yukarı Ulaştın!", screen_width//2 - 180, screen_height//2, 20, rl.DARKGREEN)
-                rl.draw_text("Yeniden başlamak için [R]", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
+                rl.draw_text("CONGRATULATIONS! YOU REACHED THE TOP!", screen_width//2 - 180, screen_height//2, 20, rl.DARKGREEN)
+                rl.draw_text("[R] to Restart ", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
 
             if rl.is_key_pressed(rl.KEY_R):
                 game_state = reset_game()
-                menu_active = True  # Menüye geri dön
+                menu_active = True
 
         rl.end_drawing()
 
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.unload_texture(meteor_texture)
+    rl.unload_texture(ship_texture)
     rl.close_window()
-
 
 if __name__ == "__main__":
     main()
