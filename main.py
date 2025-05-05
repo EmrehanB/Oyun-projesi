@@ -13,7 +13,7 @@ PLATFORM_HEIGHT_GAP = (100, 150)
 HORIZONTAL_VARIANCE = 120
 COLLISION_TOLERANCE_X = 10
 COLLISION_TOLERANCE_Y = 10
-PLATFORM_COUNTS = [10, 10, 10, 50, 70]
+PLATFORM_COUNTS = [10, 10, 10, 10, 10]
 
 class Player:
     def __init__(self, position, speed):
@@ -38,37 +38,6 @@ def generate_platforms(platform_count):
         platforms.append(rl.Rectangle(x, y, width, 10))
         y -= random.randint(*PLATFORM_HEIGHT_GAP)
     return platforms
-
-def load_backgrounds():
-    return {
-        "level_0": rl.load_texture("assets/Background1.png"),
-        "moon": rl.load_texture("assets/Background1.2.png"),
-        "cloud1": rl.load_texture("assets/Background1.3.png"),
-        "cloud2": rl.load_texture("assets/Background1.4.png"),
-        "level_1": rl.load_texture("assets/Background2.png"),
-        "level_2": rl.load_texture("assets/Background3.png"),
-        "level_3": rl.load_texture("assets/Background4.png"),
-        "level_4": rl.load_texture("assets/Background5.png"),
-    }
-
-def draw_background(level, backgrounds, offset_y):
-    def draw_fullscreen(texture, offset_y):
-        rl.draw_texture_pro(
-            texture,
-            rl.Rectangle(0, 0, texture.width, texture.height),
-            rl.Rectangle(0, offset_y, SCREEN_WIDTH, SCREEN_HEIGHT),
-            rl.Vector2(0, 0),
-            0.0,
-            rl.WHITE
-        )
-
-    if level == 0:
-        draw_fullscreen(backgrounds["level_0"], offset_y)
-        draw_fullscreen(backgrounds["moon"], offset_y)
-        draw_fullscreen(backgrounds["cloud1"], offset_y)
-        draw_fullscreen(backgrounds["cloud2"], offset_y)
-    else:
-        draw_fullscreen(backgrounds[f"level_{level}"], offset_y)
 
 def reset_game(level, sprite_w, sprite_h):
     platforms = generate_platforms(PLATFORM_COUNTS[level])
@@ -101,13 +70,14 @@ def main():
 
     meteor_texture = rl.load_texture("assets/Meteor1.png")
     ship_texture = rl.load_texture("assets/Ship2.png")
+    game_background = rl.load_texture("assets/Background.png")
+    menu_background = rl.load_texture("assets/Menu.png")
 
     sprite_w = idle_frames[0].width * SCALE
     sprite_h = idle_frames[0].height * SCALE
     meteor_width = meteor_texture.width - 45
     meteor_height = meteor_texture.height - 40
 
-    backgrounds = load_backgrounds()
     game_state = reset_game(0, sprite_w, sprite_h)
     menu_active = True
 
@@ -115,7 +85,6 @@ def main():
     camera.offset = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
     camera.zoom = 1.0
 
-    level_transition = 0.0  # Geçişin yumuşak olması için
     while not rl.window_should_close():
         rl.begin_drawing()
         rl.clear_background(rl.BLACK)
@@ -124,10 +93,16 @@ def main():
         center_y = SCREEN_HEIGHT // 2
 
         if menu_active:
+            rl.draw_texture_pro(
+                menu_background,
+                rl.Rectangle(0, 0, menu_background.width, menu_background.height),
+                rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+                rl.Vector2(0, 0),
+                0.0,
+                rl.WHITE
+            )
+
             rl.draw_text(" Meteor Escape ", center_x - 200, center_y - 120, 30, rl.YELLOW)
-            rl.draw_text("Controls:", center_x - 180, center_y - 10, 18, rl.YELLOW)
-            rl.draw_text("Use LEFT/RIGHT arrows to move", center_x - 180, center_y + 20, 16, rl.YELLOW)
-            rl.draw_text("Jump with [SPACE] – Avoid the meteors!", center_x - 180, center_y + 45, 16, rl.YELLOW)
             rl.draw_text("Press [SPACE] to start", center_x - 180, center_y + 75, 16, rl.YELLOW)
             rl.draw_text("Press [ESC] to quit", center_x - 180, center_y + 100, 16, rl.YELLOW)
 
@@ -136,6 +111,20 @@ def main():
                 menu_active = False
         else:
             player = game_state["player"]
+
+            # --- SABİT OYUN ARKAPLANI ---
+            rl.draw_texture_pro(
+                game_background,
+                rl.Rectangle(0, 0, game_background.width, game_background.height),
+                rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
+                rl.Vector2(0, 0),
+                0.0,
+                rl.WHITE
+            )
+
+            # --- HAREKETLİ NESNELERİ KAMERA TAKİBİYLE ÇİZ ---
+            camera.target = rl.Vector2(SCREEN_WIDTH // 2, player.position.y + sprite_h / 2)
+            rl.begin_mode2d(camera)
 
             if not game_state["game_finished"] and not game_state["player_hit"]:
                 moving = False
@@ -174,7 +163,6 @@ def main():
 
                 if player.position.y <= game_state["goal"].y:
                     if game_state["level"] < 4:
-                        level_transition = 1.0  # Bölüm geçişi başlasın
                         game_state = reset_game(game_state["level"] + 1, sprite_w, sprite_h)
                     else:
                         game_state["game_finished"] = True
@@ -204,13 +192,6 @@ def main():
                     game_state["frame_counter"] = 0
                     player.frame_index += 1
 
-            # Kamera sadece dikey takip eder
-            camera.target = rl.Vector2(SCREEN_WIDTH // 2, player.position.y + sprite_h / 2)
-            rl.begin_mode2d(camera)
-
-            # Geçiş efekti için arka plan kaydırma
-            draw_background(game_state["level"], backgrounds, level_transition)
-
             for plat in game_state["platforms"]:
                 rl.draw_rectangle_rec(plat, rl.DARKGRAY)
 
@@ -220,6 +201,7 @@ def main():
             for rock in game_state["falling_rocks"]:
                 rl.draw_texture(meteor_texture, int(rock.rect.x), int(rock.rect.y), rl.WHITE)
 
+            # Oyuncu sprite'ı
             if not player.can_jump:
                 frame = idle_frames[player.frame_index % len(idle_frames)]
             elif rl.is_key_down(rl.KEY_RIGHT):
@@ -232,6 +214,7 @@ def main():
             rl.draw_texture_ex(frame, rl.Vector2(player.position.x, player.position.y), 0.0, SCALE, rl.WHITE)
             rl.end_mode2d()
 
+            # Arayüz
             score = int(game_state["start_y"] - player.position.y)
             rl.draw_text(f"Score: {score} m", 20, 20, 20, rl.WHITE)
 
@@ -248,17 +231,13 @@ def main():
 
         rl.end_drawing()
 
-        # Geçiş animasyonunun bitmesi
-        if level_transition > 0:
-            level_transition -= 0.02  # Yavaşça azalacak
-
-    for tex in backgrounds.values():
-        rl.unload_texture(tex)
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.unload_texture(meteor_texture)
     rl.unload_texture(ship_texture)
+    rl.unload_texture(game_background)
+    rl.unload_texture(menu_background)
     rl.close_window()
 
 if __name__ == "__main__":
-    main()  
+    main()
