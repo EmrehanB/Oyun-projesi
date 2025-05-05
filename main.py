@@ -13,7 +13,7 @@ PLATFORM_HEIGHT_GAP = (100, 150)
 HORIZONTAL_VARIANCE = 120
 COLLISION_TOLERANCE_X = 10
 COLLISION_TOLERANCE_Y = 10
-PLATFORM_COUNTS = [10, 10, 10, 10, 10]
+PLATFORM_COUNT = 10  # 50 platform olacak
 
 class Player:
     def __init__(self, position, speed):
@@ -28,10 +28,10 @@ class FallingRock:
         self.rect = rect
         self.speed = speed
 
-def generate_platforms(platform_count):
+def generate_platforms():
     platforms = []
     y = 0
-    for _ in range(platform_count):
+    for _ in range(PLATFORM_COUNT):
         width = random.randint(*PLATFORM_WIDTH_RANGE)
         x = SCREEN_WIDTH // 2 - width // 2 + random.randint(-HORIZONTAL_VARIANCE // 2, HORIZONTAL_VARIANCE // 2)
         x = max(0, min(x, SCREEN_WIDTH - width))
@@ -39,8 +39,8 @@ def generate_platforms(platform_count):
         y -= random.randint(*PLATFORM_HEIGHT_GAP)
     return platforms
 
-def reset_game(level, sprite_w, sprite_h):
-    platforms = generate_platforms(PLATFORM_COUNTS[level])
+def reset_game(sprite_w, sprite_h):
+    platforms = generate_platforms()
     first_plat = platforms[0]
     player = Player(
         rl.Vector2(first_plat.x + first_plat.width / 2 - sprite_w / 2, first_plat.y - sprite_h),
@@ -56,10 +56,8 @@ def reset_game(level, sprite_w, sprite_h):
         "frame_counter": 0,
         "game_finished": False,
         "player_hit": False,
-        "start_y": first_plat.y,
-        "level": level
+        "start_y": first_plat.y
     }
-
 def main():
     rl.init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Meteor Escape")
     rl.set_target_fps(60)
@@ -78,7 +76,7 @@ def main():
     meteor_width = meteor_texture.width - 45
     meteor_height = meteor_texture.height - 40
 
-    game_state = reset_game(0, sprite_w, sprite_h)
+    game_state = reset_game(sprite_w, sprite_h)
     menu_active = True
 
     camera = rl.Camera2D()
@@ -102,12 +100,15 @@ def main():
                 rl.WHITE
             )
 
-            rl.draw_text(" Meteor Escape ", center_x - 200, center_y - 120, 30, rl.YELLOW)
-            rl.draw_text("Press [SPACE] to start", center_x - 180, center_y + 75, 16, rl.YELLOW)
-            rl.draw_text("Press [ESC] to quit", center_x - 180, center_y + 100, 16, rl.YELLOW)
+            # Yazıyı biraz daha aşağıya hizalayalım ve font boyutunu 1.5 kat büyütelim
+            menu_text_y_position = center_y + 50  # Orta kısmın biraz altına
+
+            rl.draw_text(" Meteor Escape ", center_x - 200, menu_text_y_position - 60, 45, rl.YELLOW)  # Fontu büyütüyoruz
+            rl.draw_text("Press [SPACE] to start", center_x - 180, menu_text_y_position + 50, 24, rl.YELLOW)  # Fontu büyütüyoruz
+            rl.draw_text("Press [ESC] to quit", center_x - 180, menu_text_y_position + 75, 24, rl.YELLOW)
 
             if rl.is_key_pressed(rl.KEY_SPACE):
-                game_state = reset_game(0, sprite_w, sprite_h)
+                game_state = reset_game(sprite_w, sprite_h)
                 menu_active = False
         else:
             player = game_state["player"]
@@ -161,12 +162,6 @@ def main():
                         player.can_jump = True
                         break
 
-                if player.position.y <= game_state["goal"].y:
-                    if game_state["level"] < 4:
-                        game_state = reset_game(game_state["level"] + 1, sprite_w, sprite_h)
-                    else:
-                        game_state["game_finished"] = True
-
                 if player.position.y > game_state["platforms"][0].y + 200:
                     game_state["player_hit"] = True
 
@@ -218,15 +213,17 @@ def main():
             score = int(game_state["start_y"] - player.position.y)
             rl.draw_text(f"Score: {score} m", 20, 20, 20, rl.WHITE)
 
+            # "YOU WIN!" mesajını sadece oyuncu gol noktasına ulaşınca gösterelim
+            if player.position.y < game_state["goal"].y:
+                rl.draw_text("YOU WIN!", center_x - 100, center_y, 24, rl.YELLOW)
+                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.YELLOW)
+
             if game_state["player_hit"]:
                 rl.draw_text(" GAME OVER.", center_x - 140, center_y, 24, rl.YELLOW)
                 rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.YELLOW)
-            elif game_state["game_finished"]:
-                rl.draw_text("CONGRATULATIONS!", center_x - 170, center_y, 24, rl.YELLOW)
-                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.YELLOW)
 
             if rl.is_key_pressed(rl.KEY_R):
-                game_state = reset_game(0, sprite_w, sprite_h)
+                game_state = reset_game(sprite_w, sprite_h)
                 menu_active = True
 
         rl.end_drawing()
@@ -241,3 +238,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
