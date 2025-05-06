@@ -1,6 +1,23 @@
 import raylibpy as rl
 import random
 
+<<<<<<< Updated upstream
+=======
+# Sabitler
+SCREEN_WIDTH = 960
+SCREEN_HEIGHT = 640
+MAX_FALLING_ROCKS = 70
+FRAME_HOLD = 6
+SCALE = 1.25
+
+PLATFORM_WIDTH_RANGE = (60, 90)
+PLATFORM_HEIGHT_GAP = (100, 150)
+HORIZONTAL_VARIANCE = 120
+COLLISION_TOLERANCE_X = 10
+COLLISION_TOLERANCE_Y = 10
+PLATFORM_COUNT = 50  # 50 platform olacak
+
+>>>>>>> Stashed changes
 class Player:
     def __init__(self, position, speed):
         self.position = position
@@ -14,6 +31,7 @@ class FallingRock:
         self.rect = rect
         self.speed = speed
 
+<<<<<<< Updated upstream
 MAX_FALLING_ROCKS = 70
 FRAME_HOLD = 6
 
@@ -29,12 +47,41 @@ def generate_platforms():
     x = 100
     y = 900
     for i in range(PLATFORM_COUNT):
+=======
+def generate_platforms():
+    platforms = []
+    y = 0
+    for _ in range(PLATFORM_COUNT):
+>>>>>>> Stashed changes
         width = random.randint(*PLATFORM_WIDTH_RANGE)
         x = max(0, min(x + random.randint(-HORIZONTAL_VARIANCE, HORIZONTAL_VARIANCE), 800 - width))
         platforms.append(rl.Rectangle(x, y, width, 10))
         y -= random.randint(*PLATFORM_HEIGHT_GAP)
     return platforms
 
+<<<<<<< Updated upstream
+=======
+def reset_game(sprite_w, sprite_h):
+    platforms = generate_platforms()
+    first_plat = platforms[0]
+    player = Player(
+        rl.Vector2(first_plat.x + first_plat.width / 2 - sprite_w / 2, first_plat.y - sprite_h),
+        3.0
+    )
+    return {
+        "platforms": platforms,
+        "player": player,
+        "velocity_y": 0,
+        "goal": rl.Vector2(platforms[-1].x + 30, platforms[-1].y),
+        "falling_rocks": [],
+        "rock_spawn_timer": 0,
+        "frame_counter": 0,
+        "game_finished": False,
+        "player_hit": False,
+        "start_y": first_plat.y
+    }
+
+>>>>>>> Stashed changes
 def main():
     screen_width = 800
     screen_height = 450
@@ -55,6 +102,7 @@ def main():
     sprite_w = idle_frames[0].width * scale
     sprite_h = idle_frames[0].height * scale
 
+<<<<<<< Updated upstream
     def reset_game():
         platforms = generate_platforms()
         first_plat = platforms[0]
@@ -75,6 +123,9 @@ def main():
         }
 
     game_state = reset_game()
+=======
+    game_state = reset_game(sprite_w, sprite_h)
+>>>>>>> Stashed changes
     menu_active = True
 
     camera = rl.Camera2D()
@@ -93,7 +144,11 @@ def main():
             rl.draw_text("Press [ESC] to quit", screen_width//2 - 180, screen_height//2 + 95, 16, rl.MAROON)
 
             if rl.is_key_pressed(rl.KEY_SPACE):
+<<<<<<< Updated upstream
                 game_state = reset_game()
+=======
+                game_state = reset_game(sprite_w, sprite_h)
+>>>>>>> Stashed changes
                 menu_active = False
         else:
             if not game_state["game_finished"] and not game_state["player_hit"]:
@@ -131,8 +186,11 @@ def main():
                         player.can_jump = True
                         break
 
+<<<<<<< Updated upstream
                 if player.position.y <= game_state["goal"].y:
                     game_state["game_finished"] = True
+=======
+>>>>>>> Stashed changes
                 if player.position.y > game_state["platforms"][0].y + 200:
                     game_state["player_hit"] = True
 
@@ -194,6 +252,7 @@ def main():
             rl.end_mode2d()
 
             if game_state["player_hit"]:
+<<<<<<< Updated upstream
                 rl.draw_text("YOU FELL OR GOT HIT BY A METEOR! GAME OVER.", screen_width//2 - 210, screen_height//2, 20, rl.RED)
                 rl.draw_text("[R] to Restart", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
             elif game_state["game_finished"]:
@@ -202,14 +261,28 @@ def main():
 
             if rl.is_key_pressed(rl.KEY_R):
                 game_state = reset_game()
+=======
+                rl.draw_text(" GAME OVER.", center_x - 140, center_y, 24, rl.YELLOW)
+                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.YELLOW)
+
+            if rl.is_key_pressed(rl.KEY_R):
+                game_state = reset_game(sprite_w, sprite_h)
+>>>>>>> Stashed changes
                 menu_active = True
 
         rl.end_drawing()
 
+<<<<<<< Updated upstream
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.unload_texture(meteor_texture)
     rl.unload_texture(ship_texture)
+=======
+        # Oyun bitmişse pencereyi kapat
+        if game_state["player_hit"] or game_state["game_finished"]:
+            break
+
+>>>>>>> Stashed changes
     rl.close_window()
 
 if __name__ == "__main__":
