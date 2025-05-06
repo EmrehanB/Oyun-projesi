@@ -78,9 +78,13 @@ def reset_game(sprite_w, sprite_h, ship_texture):
         "start_y": first_plat.y
     }
 
+<<<<<<< Updated upstream
 >>>>>>> arkin
 def main():
     rl.init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Meteor Escape")
+=======
+    rl.init_window(screen_width, screen_height, "Meteor Escape")
+>>>>>>> Stashed changes
     rl.set_target_fps(60)
 
 <<<<<<< HEAD
@@ -115,6 +119,7 @@ def main():
 
     while not rl.window_should_close():
         rl.begin_drawing()
+<<<<<<< Updated upstream
         rl.clear_background(rl.BLACK)
 
         center_x = SCREEN_WIDTH // 2
@@ -127,6 +132,17 @@ def main():
             rl.draw_text("Use LEFT/RIGHT arrows to move", screen_width//2 - 180, screen_height//2 + 45, 16, rl.DARKGRAY)
             rl.draw_text("Jump with [SPACE] – Avoid the meteors!", screen_width//2 - 180, screen_height//2 + 65, 16, rl.DARKGRAY)
             rl.draw_text("Press [ESC] to quit", screen_width//2 - 180, screen_height//2 + 95, 16, rl.MAROON)
+=======
+        rl.clear_background(rl.VIOLET)
+
+        if menu_active:
+            rl.draw_text(" Meteor Escape ", screen_width//2 - 200, screen_height//2 - 100, 30, rl.YELLOW)
+            rl.draw_text("Controls:", screen_width//2 - 180, screen_height//2 + 20, 18, rl.YELLOW)
+            rl.draw_text("Use LEFT/RIGHT arrows to move", screen_width//2 - 180, screen_height//2 + 45, 16, rl.YELLOW)
+            rl.draw_text("Jump with [SPACE] – Avoid the meteors!", screen_width//2 - 180, screen_height//2 + 65, 16, rl.YELLOW)
+            rl.draw_text("Press [SPACE] to start", screen_width//2 - 180, screen_height//2 + 80, 16, rl.YELLOW)
+            rl.draw_text("Press [ESC] to quit", screen_width//2 - 180, screen_height//2 + 95, 16, rl.YELLOW)
+>>>>>>> Stashed changes
 
 =======
             rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height), rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
@@ -230,12 +246,17 @@ def main():
             rl.draw_text(f"Score: {score} m", 20, 20, 20, rl.WHITE)
 
             if game_state["player_hit"]:
+<<<<<<< Updated upstream
 <<<<<<< HEAD
                 rl.draw_text("YOU FELL OR GOT HIT BY A METEOR! GAME OVER.", screen_width//2 - 210, screen_height//2, 20, rl.RED)
                 rl.draw_text("[R] to Restart", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
+=======
+                rl.draw_text(" GAME OVER.", screen_width//2 - 210, screen_height//2, 20, rl.YELLOW)
+                rl.draw_text("[R] to Restart", screen_width//2 - 150, screen_height//2 + 30, 18, rl.YELLOW)
+>>>>>>> Stashed changes
             elif game_state["game_finished"]:
-                rl.draw_text("CONGRATULATIONS! YOU REACHED THE TOP!", screen_width//2 - 180, screen_height//2, 20, rl.DARKGREEN)
-                rl.draw_text("[R] to Restart ", screen_width//2 - 150, screen_height//2 + 30, 18, rl.DARKGRAY)
+                rl.draw_text("CONGRATULATIONS! ", screen_width//2 - 180, screen_height//2, 20, rl.YELLOW)
+                rl.draw_text("[R] to Restart ", screen_width//2 - 150, screen_height//2 + 30, 18, rl.YELLOW)
 
             if rl.is_key_pressed(rl.KEY_R):
                 game_state = reset_game()
