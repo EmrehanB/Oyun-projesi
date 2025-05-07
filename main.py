@@ -6,7 +6,7 @@ SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 640
 MAX_FALLING_ROCKS = 70
 FRAME_HOLD = 6
-SCALE = 1.25
+SCALE = 1.50
 PLATFORM_WIDTH_RANGE = (60, 90)
 PLATFORM_HEIGHT_GAP = (100, 150)
 HORIZONTAL_VARIANCE = 120
@@ -110,9 +110,9 @@ def main():
 
         if menu_active:
             rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height), rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
-            rl.draw_text(" Meteor Escape ", center_x - 200, center_y - 120, 30, rl.YELLOW)
-            rl.draw_text("Press [SPACE] to start", center_x - 180, center_y + 75, 16, rl.YELLOW)
-            rl.draw_text("Press [ESC] to quit", center_x - 180, center_y + 100, 16, rl.YELLOW)
+            
+            rl.draw_text("Press [SPACE] to start", center_x - 150, center_y + 0, 25, rl.YELLOW)
+            rl.draw_text("Press [ESC] to quit", center_x - 150, center_y + 25, 25, rl.YELLOW)
             if rl.is_key_pressed(rl.KEY_SPACE):
                 game_state = reset_game(sprite_w, sprite_h, ship_texture)
                 menu_active = False
