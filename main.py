@@ -26,20 +26,7 @@ class FallingRock:
     def __init__(self, rect, speed):
         self.rect = rect
         self.speed = speed
-
-<<<<<<< HEAD
-MAX_FALLING_ROCKS = 70
-FRAME_HOLD = 6
-
-PLATFORM_COUNT = 50
-PLATFORM_WIDTH_RANGE = (60, 90)
-PLATFORM_HEIGHT_GAP = (100, 150)
-HORIZONTAL_VARIANCE = 120
-COLLISION_TOLERANCE_X = 10
-COLLISION_TOLERANCE_Y = 10
-
-=======
->>>>>>> main
+        
 def generate_platforms():
     platforms = []
     y = 0
