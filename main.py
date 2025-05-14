@@ -103,15 +103,9 @@ def main():
         center_y = SCREEN_HEIGHT // 2
 
         if menu_active:
-<<<<<<< HEAD
-            rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height), rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
-            
-            rl.draw_text("Press [SPACE] to start", center_x - 150, center_y + 0, 25, rl.YELLOW)
-=======
             rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height),
                                 rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
             rl.draw_text("Press [SPACE] to start", center_x - 150, center_y, 25, rl.YELLOW)
->>>>>>> arkin
             rl.draw_text("Press [ESC] to quit", center_x - 150, center_y + 25, 25, rl.YELLOW)
             if rl.is_key_pressed(rl.KEY_SPACE):
                 game_state = reset_game(sprite_w, sprite_h, ship_texture)
