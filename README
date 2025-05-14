@@ -1,0 +1,77 @@
+# 🚀 Meteor Escape
+
+Meteor Escape, RaylibPy kullanılarak geliştirilen 2D bir platform oyunudur. Amaç, düşen meteorlardan kaçarak en üst platforma ulaşmak ve uzay gemisine binerek kurtulmaktır.
+
+---
+
+## 🎮 Oynanış
+
+Oyuncu, bir astronotu kontrol ederek platformlardan zıplar ve sağa/sola hareket eder. Yere temas etmeden meteorlardan kaçmalı ve yukarıdaki uzay gemisine ulaşmalıdır.
+
+### Kontroller
+
+| Tuş        | İşlev                     |
+|------------|---------------------------|
+| ← / →      | Sağa / Sola hareket       |
+| SPACE      | Zıplama                   |
+| R          | Yeniden başlat            |
+| ESC        | Oyundan çıkış             |
+
+## 🎮 Ekran Görüntüleri
+
+<p align="center">
+  <img src="assets/screenshots/Victory.png" width="280" alt="Kazandınız">
+  <img src="assets/screenshots/Gameover.png" width="280" alt="Oyun Bitti">
+  <img src="assets/screenshots/Gameplay.png" width="280" alt="Oynanış">
+</p>
+---
+
+## 🛠️ Teknik Bilgiler
+
+- **Geliştirme Dili**: Python
+- **Kütüphane**: [RaylibPy](https://github.com/overdrivenpotato/raylibpy)
+- **Çözünürlük**: 960x640
+- **Platform Sayısı**: 10
+- **Maksimum Meteor Sayısı**: 70
+
+### Oyun Mekanikleri
+
+- Platformlar rastgele konumlandırılır.
+- Yukarı doğru ilerledikçe meteorlar düşmeye başlar.
+- Oyuncunun hedefi: yukarıdaki gemiye ulaşmak.
+- Gemiye temas eden oyuncu oyunu kazanır.
+- Meteora çarpmak veya düşmek oyunu kaybettirir.
+
+## ⚙️ Gereksinimler
+
+- Python 3.7+
+- [raylibpy](https://pypi.org/project/raylibpy/)
+
+## 📦 Kurulum
+
+Aşağıdaki adımlarla projeyi çalıştırabilirsiniz:
+
+```bash
+git clone https://github.com/kullanici-adi/meteor-escape.git
+cd meteor-escape
+pip install -r requirements.txt
+python main.py
+
+---
+
+## 📁 Proje Yapısı
+
+project_root/
+│
+├── assets/
+│ ├── spriteSplitted/ # Oyuncu animasyonları
+│ ├── Background.png
+│ ├── Menu.png
+│ ├── Meteor1.png
+│ ├── Ship2.png
+│ ├── Platform.png
+│ ├── Music.mp3
+│
+├── assets/screenshots/ ( Gameplay.png, Victory.png, Gameover.png)
+├── main.py 
+├── README.md 

@@ -67,17 +67,17 @@ def main():
     rl.init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Meteor Escape")
     rl.set_target_fps(60)
 
-    # Ses sistemi başlat ve müziği yükle
+    # Ses sistemi
     rl.init_audio_device()
     music = rl.load_music_stream("assets/Music.mp3")
     rl.play_music_stream(music)
 
-    # Görselleri yükle
+    # Oyun Görselleri 
     idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 8)]
     walk_right_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
     walk_left_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(25, 31)]
-    meteor_texture = rl.load_texture("assets/Meteor1.png")
-    ship_texture = rl.load_texture("assets/Ship2.png")
+    meteor_texture = rl.load_texture("assets/Meteor.png")
+    ship_texture = rl.load_texture("assets/SpaceShip.png")
     game_background = rl.load_texture("assets/Background.png")
     menu_background = rl.load_texture("assets/Menu.png")
     platform_texture = rl.load_texture("assets/Platform.png")
@@ -95,7 +95,7 @@ def main():
     camera.zoom = 1.0
 
     while not rl.window_should_close():
-        rl.update_music_stream(music)  # Müzik sürekli çalmalı
+        rl.update_music_stream(music)  
         rl.begin_drawing()
         rl.clear_background(rl.BLACK)
 
@@ -219,7 +219,7 @@ def main():
 
         rl.end_drawing()
 
-    # Temizlik
+    # Oyun bitimi sıfırlama
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.unload_texture(meteor_texture)
