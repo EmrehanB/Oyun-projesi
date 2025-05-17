@@ -19,11 +19,11 @@ Oyuncu, bir astronotu kontrol ederek platformlardan zıplar ve sağa/sola hareke
 
 ## 🎮 Ekran Görüntüleri
 
-<p align="center">
-  <img src="assets/screenshots/Victory.png" width="280" alt="Kazandınız">
-  <img src="assets/screenshots/Gameover.png" width="280" alt="Oyun Bitti">
-  <img src="assets/screenshots/Gameplay.png" width="280" alt="Oynanış">
-</p>
+
+![Kazandınız](assets/screenshots/Victory.png)
+![Oyun Bitti](assets/screenshots/Gameover.png)
+![Oynanış](assets/screenshots/Gameplay.png)
+
 ---
 
 ## 🛠️ Teknik Bilgiler
