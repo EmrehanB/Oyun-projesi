@@ -52,7 +52,7 @@ Oyuncu, bir astronotu kontrol ederek platformlardan zıplar ve sağa/sola hareke
 Aşağıdaki adımlarla projeyi çalıştırabilirsiniz:
 
 ```bash
-git clone https://github.com/kullanici-adi/meteor-escape.git
+git clone https://github.com/EmrehanB/Oyun-projesi.git
 cd meteor-escape
 pip install -r requirements.txt
 python main.py
