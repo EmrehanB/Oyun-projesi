@@ -1,4 +1,3 @@
-# meteor_escape_game.py
 import raylibpy as rl
 import random
 
@@ -8,11 +7,12 @@ MAX_FALLING_ROCKS = 70
 FRAME_HOLD = 6
 SCALE = 1.50
 PLATFORM_WIDTH_RANGE = (60, 90)
-PLATFORM_HEIGHT_GAP = (100, 150)
+PLATFORM_HEIGHT_GAP = (100, 130)
 HORIZONTAL_VARIANCE = 120
 COLLISION_TOLERANCE_X = 10
 COLLISION_TOLERANCE_Y = 10
 PLATFORM_COUNT = 10
+GOAL_HITBOX_SIZE = 30
 
 class Player:
     def __init__(self, position, speed):
@@ -46,10 +46,10 @@ def reset_game(sprite_w, sprite_h, ship_texture):
         3.0
     )
     last_platform = platforms[-1]
-    goal = rl.Vector2(
-        last_platform.x + last_platform.width / 2 - ship_texture.width / 2,
-        last_platform.y - ship_texture.height - 20
-    )
+    goal_x = last_platform.x + last_platform.width / 2 - ship_texture.width / 2
+    goal_y = last_platform.y - ship_texture.height - 8
+    goal = rl.Vector2(goal_x, goal_y)
+
     return {
         "platforms": platforms,
         "player": player,
@@ -60,26 +60,32 @@ def reset_game(sprite_w, sprite_h, ship_texture):
         "frame_counter": 0,
         "game_finished": False,
         "player_hit": False,
-        "start_y": first_plat.y
+        "start_y": first_plat.y,
     }
 
 def main():
     rl.init_window(SCREEN_WIDTH, SCREEN_HEIGHT, "Meteor Escape")
     rl.set_target_fps(60)
 
+    # Ses sistemi başlat ve müziği yükle
+    rl.init_audio_device()
+    music = rl.load_music_stream("assets/Music.mp3")
+    rl.play_music_stream(music)
+
+    # Görselleri yükle
     idle_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(0, 8)]
     walk_right_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(9, 16)]
     walk_left_frames = [rl.load_texture(f"assets/spriteSplitted/{i}_Astronaut Player.png") for i in range(25, 31)]
-
     meteor_texture = rl.load_texture("assets/Meteor1.png")
     ship_texture = rl.load_texture("assets/Ship2.png")
     game_background = rl.load_texture("assets/Background.png")
     menu_background = rl.load_texture("assets/Menu.png")
+    platform_texture = rl.load_texture("assets/Platform.png")
 
     sprite_w = idle_frames[0].width * SCALE
     sprite_h = idle_frames[0].height * SCALE
-    meteor_width = meteor_texture.width - 45
-    meteor_height = meteor_texture.height - 40
+    meteor_w = meteor_texture.width - 30
+    meteor_h = meteor_texture.height - 30
 
     game_state = reset_game(sprite_w, sprite_h, ship_texture)
     menu_active = True
@@ -89,6 +95,7 @@ def main():
     camera.zoom = 1.0
 
     while not rl.window_should_close():
+        rl.update_music_stream(music)  # Müzik sürekli çalmalı
         rl.begin_drawing()
         rl.clear_background(rl.BLACK)
 
@@ -96,16 +103,18 @@ def main():
         center_y = SCREEN_HEIGHT // 2
 
         if menu_active:
-            rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height), rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
-            
-            rl.draw_text("Press [SPACE] to start", center_x - 150, center_y + 0, 25, rl.YELLOW)
+            rl.draw_texture_pro(menu_background, rl.Rectangle(0, 0, menu_background.width, menu_background.height),
+                                rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
+            rl.draw_text("Press [SPACE] to start", center_x - 150, center_y, 25, rl.YELLOW)
             rl.draw_text("Press [ESC] to quit", center_x - 150, center_y + 25, 25, rl.YELLOW)
             if rl.is_key_pressed(rl.KEY_SPACE):
                 game_state = reset_game(sprite_w, sprite_h, ship_texture)
                 menu_active = False
         else:
             player = game_state["player"]
-            rl.draw_texture_pro(game_background, rl.Rectangle(0, 0, game_background.width, game_background.height), rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
+            rl.draw_texture_pro(game_background, rl.Rectangle(0, 0, game_background.width, game_background.height),
+                                rl.Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT), rl.Vector2(0, 0), 0.0, rl.WHITE)
+
             camera.target = rl.Vector2(SCREEN_WIDTH // 2, player.position.y + sprite_h / 2)
             rl.begin_mode2d(camera)
 
@@ -150,7 +159,7 @@ def main():
                     if len(game_state["falling_rocks"]) < MAX_FALLING_ROCKS:
                         rx = player.position.x + random.randint(-HORIZONTAL_VARIANCE, HORIZONTAL_VARIANCE)
                         ry = player.position.y - 300
-                        game_state["falling_rocks"].append(FallingRock(rl.Rectangle(rx, ry, meteor_width, meteor_height), random.randint(3, 6)))
+                        game_state["falling_rocks"].append(FallingRock(rl.Rectangle(rx, ry, meteor_w, meteor_h), random.randint(3, 6)))
                     game_state["rock_spawn_timer"] = 0
 
                 for rock in game_state["falling_rocks"][:]:
@@ -165,12 +174,18 @@ def main():
                     game_state["frame_counter"] = 0
                     player.frame_index += 1
 
-                goal_rect = rl.Rectangle(game_state["goal"].x, game_state["goal"].y, ship_texture.width, ship_texture.height)
-                if rl.check_collision_recs(player_rect, goal_rect):
+                goal = game_state["goal"]
+                goal_hitbox = rl.Rectangle(
+                    goal.x + ship_texture.width / 2 - GOAL_HITBOX_SIZE / 2,
+                    goal.y + ship_texture.height / 2 - GOAL_HITBOX_SIZE / 2,
+                    GOAL_HITBOX_SIZE,
+                    GOAL_HITBOX_SIZE
+                )
+                if rl.check_collision_recs(player_rect, goal_hitbox):
                     game_state["game_finished"] = True
 
             for plat in game_state["platforms"]:
-                rl.draw_rectangle_rec(plat, rl.DARKGRAY)
+                rl.draw_texture_ex(platform_texture, rl.Vector2(plat.x, plat.y), 0.0, plat.width / platform_texture.width, rl.WHITE)
 
             goal = game_state["goal"]
             rl.draw_texture(ship_texture, int(goal.x), int(goal.y), rl.WHITE)
@@ -192,12 +207,11 @@ def main():
             rl.draw_text(f"Score: {score} m", 20, 20, 20, rl.WHITE)
 
             if game_state["player_hit"]:
-                rl.draw_text(" GAME OVER.", center_x - 140, center_y, 24, rl.YELLOW)
-                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.YELLOW)
-
+                rl.draw_text(" GAME OVER.", center_x - 140, center_y, 30, rl.YELLOW)
+                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 30, rl.YELLOW)
             elif game_state["game_finished"]:
-                rl.draw_text(" YOU WIN! ", center_x - 120, center_y, 24, rl.GREEN)
-                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 18, rl.GREEN)
+                rl.draw_text(" YOU WIN! ", center_x - 120, center_y, 30, rl.GREEN)
+                rl.draw_text("[R] to Restart", center_x - 120, center_y + 40, 30, rl.GREEN)
 
             if rl.is_key_pressed(rl.KEY_R):
                 game_state = reset_game(sprite_w, sprite_h, ship_texture)
@@ -205,12 +219,16 @@ def main():
 
         rl.end_drawing()
 
+    # Temizlik
     for tex in idle_frames + walk_right_frames + walk_left_frames:
         rl.unload_texture(tex)
     rl.unload_texture(meteor_texture)
     rl.unload_texture(ship_texture)
     rl.unload_texture(game_background)
     rl.unload_texture(menu_background)
+    rl.unload_texture(platform_texture)
+    rl.unload_music_stream(music)
+    rl.close_audio_device()
     rl.close_window()
 
 if __name__ == "__main__":
