@@ -11,7 +11,7 @@ PLATFORM_HEIGHT_GAP = (100, 130)
 HORIZONTAL_VARIANCE = 120
 COLLISION_TOLERANCE_X = 10
 COLLISION_TOLERANCE_Y = 10
-PLATFORM_COUNT = 10
+PLATFORM_COUNT = 20
 GOAL_HITBOX_SIZE = 30
 
 class Player:
@@ -27,7 +27,7 @@ class FallingRock:
         self.rect = rect
         self.speed = speed
 
-def generate_platforms():
+def generate_platforms():  
     platforms = []
     y = 0
     for _ in range(PLATFORM_COUNT):

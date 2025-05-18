@@ -31,7 +31,7 @@ Oyuncu, bir astronotu kontrol ederek platformlardan zıplar ve sağa/sola hareke
 - **Geliştirme Dili**: Python
 - **Kütüphane**: [RaylibPy](https://github.com/overdrivenpotato/raylibpy)
 - **Çözünürlük**: 960x640
-- **Platform Sayısı**: 10
+- **Platform Sayısı**: 20
 - **Maksimum Meteor Sayısı**: 70
 
 ### Oyun Mekanikleri
